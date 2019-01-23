@@ -36,7 +36,7 @@ class Ca268Spider(scrapy.Spider):
                 'section_summary': summary,
             }
 
-        for section_link in sections.css('.section-title a'):
+        for section_link in sections.css('.section-title a')[10:11]:
             section_request = response.follow(
                 section_link, 
                 callback=self.parse_section,
@@ -45,19 +45,19 @@ class Ca268Spider(scrapy.Spider):
             yield section_request
 
     def parse_section(self, response):
-        # to identify the main content, need to know the section id from the request query string
-        # need to use META: https://stackoverflow.com/questions/20081024/scrapy-get-request-url-in-parse
+        # to identify the main content in the response, need to know the section id
         section_url = response.meta['original_section_url']
         url_qs = urllib.parse.parse_qs(urllib.parse.urlparse(section_url).query)
         section_content = response.css('#section-{} .section'.format(url_qs['section'][0]))
         # section_content = response.css('#section-9 .section')
         vpls = section_content.css('.vpl')
-        for vpl in vpls:
+        for vpl in vpls[:3]:
             yield {'vpl_title': vpl.css('::text').extract_first()}
-        # for vpl in vpls:
-        #     yield response.follow(
-        #         vpl.css('a'),
-        #         callback=self.parse_vpl)
+
+        for vpl_a in vpls.css('a')[:3]:
+            yield response.follow(
+                vpl_a,
+                callback=self.parse_vpl)
 
     def parse_vpl(self, response):
         main = response.css('.box > .box')
@@ -66,9 +66,13 @@ class Ca268Spider(scrapy.Spider):
         yield {
             'vpl_description': '\n'.join(description)
         }
-        # xpath to find 'a' tag by 'submissionview' text
-        # request to it, handler for it
+
+        submissionview = response.css('[role="main"] .nav [title="Submission view"]')
+        if submissionview:  # if non-empty list
+            yield response.follow(submissionview[0], callback=self.parse_submissionview)
 
     def parse_submissionview(self, response):
-        pass
-        # code to get actual source (not scripted by ace editor)
+        # parsing must happen before JavaScript is ran on the DOM (on the raw HTML sourcecode) (afterards, Ace Editor styles and distributes the code over many elements)
+        code = response.css('[role="main"] #codefileid1 ::text') 
+        yield {'vpl_code': code.extract_first()}
+        # code to get upload / test info ...
