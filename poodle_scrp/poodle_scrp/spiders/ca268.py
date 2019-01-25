@@ -25,6 +25,7 @@ class Ca268Spider(scrapy.Spider):
         )
 
     def parse(self, response):
+        """Get link to each section"""
         sections = response.css('.topics > li')
         # for section in sections:
         #     title = section.css('.section-title a ::text').extract_first()
@@ -36,35 +37,34 @@ class Ca268Spider(scrapy.Spider):
         #         'section_summary': summary,
         #     }
 
-        for section_link in sections.css('.section-title a')[-1:-4:-2]:
-            section_request = response.follow(
-                section_link, 
-                callback=self.parse_section,
-            )
-            section_request.meta['url_to_section'] = section_link.xpath('@href').extract_first()
+        for section_link in sections.css('.section-title a')[0:10:5]:
+            section_request = response.follow(section_link, callback=self.parse_section)
+            # include section id (a string integer) with each section
+            section_url = section_link.xpath('@href').extract_first()
+            querystring = urllib.parse.parse_qs(urllib.parse.urlparse(section_url).query)
+            section_request.meta['section_id'] = querystring['section'][0]
             yield section_request
 
     def parse_section(self, response):
-        # need to know the section id in order to identify the main content of the page
-        section_url = response.meta['url_to_section']
-        # section_url = 'https://poodle.computing.dcu.ie/moodle/course/view.php?id=4&section=4'
-        querystring = urllib.parse.parse_qs(urllib.parse.urlparse(section_url).query)
-        section_identifier = '#section-{}'.format(querystring['section'][0])
+        """Get metadata of a section and its Virtual Programming Labs"""
+        # response.meta['section_id'] = '4'
         section_title = response.css('#region-main .navigationtitle .sectionname ::text')
-        section_summary = response.css('{} .summary ::text'.format(section_identifier))
+        # Use the section id to identify the main content box
+        section_summary = response.css('#section-{} .summary ::text'.format(response.meta['section_id']))
         yield {
             'type':'section',
+            'section_id': response.meta['section_id'],
             'section_title': section_title.extract_first(),
             'section_summary': ' '.join(section_summary.extract()).replace('\r\n', '').strip(),
         }
 
         # for vpl in vpls:
         #     yield {'vpl_title': vpl.css('::text').extract_first()}
-
-        for vpl_a in response.css('{} .vpl a'.format(section_identifier)):
-            yield response.follow(
-                vpl_a,
-                callback=self.parse_vpl)
+        for vpl_a in response.css('#section-{} .vpl a'.format(response.meta['section_id'])):
+            vpl_request = response.follow(vpl_a, callback=self.parse_vpl)
+            # pass section id to VPLs, indicating a relationship
+            vpl_request.meta['section_id'] = response.meta['section_id']
+            yield vpl_request
 
     def parse_vpl(self, response):
         """Follow links to the Virtual Programming Labs"""
@@ -74,7 +74,8 @@ class Ca268Spider(scrapy.Spider):
         vpl_item = {
             'type': 'vpl',
             'vpl_title': vpl_title.extract_first(),
-            'vpl_description': '\n'.join(vpl_description.extract())
+            'vpl_description': '\n'.join(vpl_description.extract()),
+            'vpl_section_id': response.meta['section_id'],
         }
 
         submissionview_link = response.css('[role="main"] .nav [title="Submission view"]')
