@@ -11,7 +11,10 @@ Note that this scrapes HTML views, so the scraper can break any time the website
 * Python 3
 * Scrapy 1.5.1
 
-## Example video
+## Video showcase
+
+<a href="https://youtu.be/nFgYS49q0Y4" target="_blank"><img src="http://img.youtube.com/vi/nFgYS49q0Y4/0.jpg" alt="Image from video showing the command-line and the file explorer" width="240" height="180" border="10" /></a>
+
 
 ## Usage (command line)
 
