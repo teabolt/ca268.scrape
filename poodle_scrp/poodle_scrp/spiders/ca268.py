@@ -13,7 +13,6 @@ class Ca268Spider(scrapy.Spider):
         return [scrapy.Request('https://poodle.computing.dcu.ie/moodle/course/view.php?id=4', callback=self.log_in)]
 
     def log_in(self, response):
-        # some info on 302's https://stackoverflow.com/questions/20805932/scrapy-retry-or-redirect-middleware
         return scrapy.FormRequest.from_response(
             response,
             formid='login',
@@ -25,29 +24,19 @@ class Ca268Spider(scrapy.Spider):
         )
 
     def parse(self, response):
-        """Get link to each section"""
+        """Parser for the main course page. Gets links to each section"""
         sections = response.css('.topics > li')
-        # for section in sections:
-        #     title = section.css('.section-title a ::text').extract_first()
-        #     if title is not None:
-        #         title = title.strip()
-        #     summary = ' '.join(section.css('.summarytext p ::text').extract()).replace('\r\n', '').strip()
-        #     yield {
-        #         'section_title': title,
-        #         'section_summary': summary,
-        #     }
-
-        for section_link in sections.css('.section-title a')[0:10:5]:
+        for section_link in sections.css('.section-title a'):
             section_request = response.follow(section_link, callback=self.parse_section)
-            # include section id (a string integer) with each section
+            # include section id (a string integer) with each section item
             section_url = section_link.xpath('@href').extract_first()
             querystring = urllib.parse.parse_qs(urllib.parse.urlparse(section_url).query)
             section_request.meta['section_id'] = querystring['section'][0]
             yield section_request
 
     def parse_section(self, response):
-        """Get metadata of a section and its Virtual Programming Labs"""
-        # response.meta['section_id'] = '4'
+        """Get metadata of the section and links to its Virtual Programming Labs (VPLs) 
+        (pair/individual programming tasks)"""
         section_title = response.css('#region-main .navigationtitle .sectionname ::text')
         # Use the section id to identify the main content box
         section_summary = response.css('#section-{} .summary ::text'.format(response.meta['section_id']))
@@ -57,17 +46,14 @@ class Ca268Spider(scrapy.Spider):
             'section_title': section_title.extract_first(),
             'section_summary': ' '.join(section_summary.extract()).replace('\r\n', '').strip(),
         }
-
-        # for vpl in vpls:
-        #     yield {'vpl_title': vpl.css('::text').extract_first()}
-        for vpl_a in response.css('#section-{} .vpl a'.format(response.meta['section_id'])):
+        for vpl_a in response.css('#section-{} .vpl a'.format(response.meta['section_id']))[:2]:
             vpl_request = response.follow(vpl_a, callback=self.parse_vpl)
             # pass section id to VPLs, indicating a relationship
             vpl_request.meta['section_id'] = response.meta['section_id']
             yield vpl_request
 
     def parse_vpl(self, response):
-        """Follow links to the Virtual Programming Labs"""
+        """Get VPL metadata and pass it on to the code page parser"""
         vpl_title = response.css('[role="main"] > h2::text')
         vpl_body = response.css('.box > .box')
         vpl_description = vpl_body.css('p, pre').css('::text')
@@ -77,35 +63,29 @@ class Ca268Spider(scrapy.Spider):
             'vpl_description': '\n'.join(vpl_description.extract()),
             'vpl_section_id': response.meta['section_id'],
         }
-
         submissionview_link = response.css('[role="main"] .nav [title="Submission view"]')
-        if submissionview_link:  # if non-empty list
+        if submissionview_link:
             submission_request = response.follow(submissionview_link[0], callback=self.parse_submissionview)
             submission_request.meta['vpl_item'] = vpl_item
             yield submission_request
 
     def parse_submissionview(self, response):
-        # parsing must happen before JavaScript is ran on the DOM (on the raw HTML sourcecode) (afterards, Ace Editor styles and distributes the code over many elements)
+        """Parse the page containing the code / results for the VPL"""
+        # parsing must happen before JavaScript is ran on the DOM (on raw HTML source code) 
+        # (afterards, Ace Editor styles and distributes the code over many elements)
         vpl_item = response.meta['vpl_item']
-        # vpl_item = {
-        # 'type':'vpl',
-        # 'vpl_title':'How many items',
-        # 'vpl_description':'abababa test',
-        # }
         code = response.css('[role="main"] #codefileid1 ::text')
         vpl_item['vpl_code'] = code.extract_first()
-
         assessment = response.css('.box')
         tests = assessment.re_first('[^|]*run[^|]*')
         if tests:
             tests = tests.strip()
         vpl_item['vpl_tests'] = tests
-
         grade = assessment.xpath('//b[text()="grade"]/following-sibling::text()[1]').re_first('[0-9]+')
+        # this does not always work
         try:
             grade = int(grade)
-        except ValueError:
+        except (ValueError, TypeError): 
             pass
         vpl_item['vpl_grade'] = grade
-
         yield vpl_item

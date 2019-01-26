@@ -64,9 +64,10 @@ ROBOTSTXT_OBEY = True
 
 # Configure item pipelines
 # See https://doc.scrapy.org/en/latest/topics/item-pipeline.html
-#ITEM_PIPELINES = {
-#    'poodle_scrp.pipelines.PoodleScrpPipeline': 300,
-#}
+ITEM_PIPELINES = {
+   # 'poodle_scrp.pipelines.PoodleScrpPipeline': 400,
+   'poodle_scrp.pipelines.DataTypeJsonLinesExporter': 800,
+}
 
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See https://doc.scrapy.org/en/latest/topics/autothrottle.html
