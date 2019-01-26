@@ -46,7 +46,7 @@ class Ca268Spider(scrapy.Spider):
             'section_title': section_title.extract_first(),
             'section_summary': ' '.join(section_summary.extract()).replace('\r\n', '').strip(),
         }
-        for vpl_a in response.css('#section-{} .vpl a'.format(response.meta['section_id']))[:2]:
+        for vpl_a in response.css('#section-{} .vpl a'.format(response.meta['section_id'])):
             vpl_request = response.follow(vpl_a, callback=self.parse_vpl)
             # pass section id to VPLs, indicating a relationship
             vpl_request.meta['section_id'] = response.meta['section_id']
