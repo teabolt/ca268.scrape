@@ -42,7 +42,7 @@ py -3.7 orgout.py <input_directory_path> [output_directory_path]
 * Find new directories, .txt, and .py files under the output directory.
 
 
-## API
+## Implementation
 The relevant source code is:
 * ```poodle_scrp\poodle_scrp```
   * ```spiders\ca268.py```
