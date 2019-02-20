@@ -46,7 +46,7 @@ py -3.7 orgout.py <input_directory_path> [output_directory_path]
 The relevant source code is:
 * ```poodle_scrp\poodle_scrp```
   * ```spiders\ca268.py```
-    * ```Log in functionality, requests, response processing, data output```
+    * Log in functionality, requests, response processing, data output
   * ```pipelines.py```
     * item exporter class ```DataTypeJsonLinesExporter```, writes dict output to appropriate jsonlines file
   * ```settings.py```
