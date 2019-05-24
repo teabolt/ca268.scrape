@@ -3,19 +3,35 @@
 import scrapy
 import getpass
 import urllib.parse
+import logging
 
 
 class PoodlerSpider(scrapy.Spider):
+    """
+    PoodlerSpider
+    arguments:
+    course : str (required), course code for which to scrape on Poodle
+    """
+    
     name = 'poodler'
     allowed_domains = ['poodle.computing.dcu.ie']
+    course_ids = {
+        'ca268':'4',
+        'ca269':'13',
+    }
 
     def start_requests(self):
-        return [
-        scrapy.Request(
-            # 'https://poodle.computing.dcu.ie/moodle/course/view.php?id=4', 
-            'https://poodle.computing.dcu.ie/moodle/course/view.php?id=13',
-            callback=self.log_in)
-        ]
+        try:
+            idn = self.course_ids[self.course]
+        except KeyError:
+            logging.warning('Could not get ID of course "{}"'.format(self.course))
+            return []
+        else:
+            return [
+            scrapy.Request(
+                'https://poodle.computing.dcu.ie/moodle/course/view.php?id=' + idn,
+                callback=self.log_in)
+            ]
 
     def log_in(self, response):
         return scrapy.FormRequest.from_response(
