@@ -21,9 +21,12 @@ class DataTypeJsonLinesExporter(object):
 
     def open_spider(self, spider):
         self.exporters = {}
-        curr_t = datetime.datetime.now().strftime('%Y_%m_%d_%H_%M_%S_%f')
-        self.curr_t = curr_t
-        os.mkdir(curr_t)
+        # curr_t = datetime.datetime.now().strftime('%Y_%m_%d_%H_%M_%S_%f')
+        # self.curr_t = curr_t
+        # os.mkdir(curr_t)
+        save_dir = spider.save_dir
+        self.save_dir = save_dir
+        os.makedirs(save_dir, exist_ok=True)
 
     def close_spider(self, spider):
         for exporter in self.exporters.values():
@@ -33,7 +36,7 @@ class DataTypeJsonLinesExporter(object):
     def _section_exporter(self, item):
         """Retrieve an exporter for section metadata"""
         if 'all_sections' not in self.exporters:
-            f = open(os.path.join(self.curr_t, 'sections.jsonlines'), 'wb')
+            f = open(os.path.join(self.save_dir, 'sections.jsonlines'), 'wb')
             exporter = JsonLinesItemExporter(f)
             self.exporters['all_sections'] = exporter
             exporter.start_exporting()
@@ -43,7 +46,7 @@ class DataTypeJsonLinesExporter(object):
         """Retrieve an exporter for a Virtual Programming Lab that belongs to a section"""
         exporter_name = 'vpls_section_{}'.format(item['vpl_section_id'])
         if exporter_name not in self.exporters:
-            f = open(os.path.join(self.curr_t, 'vpls{}.jsonlines'.format(item['vpl_section_id'])), 'wb')
+            f = open(os.path.join(self.save_dir, 'vpls{}.jsonlines'.format(item['vpl_section_id'])), 'wb')
             exporter = JsonLinesItemExporter(f)
             self.exporters[exporter_name] = exporter
             exporter.start_exporting()

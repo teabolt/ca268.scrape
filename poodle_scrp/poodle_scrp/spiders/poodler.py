@@ -9,29 +9,29 @@ import logging
 class PoodlerSpider(scrapy.Spider):
     """
     PoodlerSpider
-    arguments:
-    course : str (required), course code for which to scrape on Poodle
+    required arguments:
+    course : str, course code for which to scrape on Poodle
+    save_dir: str, path where to save scraped data
     """
-    
     name = 'poodler'
     allowed_domains = ['poodle.computing.dcu.ie']
+
     course_ids = {
         'ca268':'4',
         'ca269':'13',
     }
 
     def start_requests(self):
+        start_page = []
         try:
             idn = self.course_ids[self.course]
         except KeyError:
-            logging.warning('Could not get ID of course "{}"'.format(self.course))
-            return []
+            logging.warning('Can not get page ID of course "{}"'.format(self.course))
         else:
-            return [
-            scrapy.Request(
+            start_page.append(scrapy.Request(
                 'https://poodle.computing.dcu.ie/moodle/course/view.php?id=' + idn,
-                callback=self.log_in)
-            ]
+                callback=self.log_in))
+        return start_page
 
     def log_in(self, response):
         return scrapy.FormRequest.from_response(
@@ -41,8 +41,7 @@ class PoodlerSpider(scrapy.Spider):
                 'username': input('Username: '), 
                 'password': getpass.getpass('Password: ')
                 },
-            dont_filter=True,
-        )
+            dont_filter=True)
 
     def parse(self, response):
         """Parser for the main course page. Gets links to each section"""
