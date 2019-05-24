@@ -1,18 +1,35 @@
 #!/usr/bin/env python3
 
-"""Execute scrapers from this script instead of using 'scrapy crawl'"""
+"""
+Replacement for using 'scrapy crawl ...' on the command line
+
+Usage:
+run.py <course-code> <save-path>
+"""
 
 import sys
+import os.path
 
 from scrapy.crawler import CrawlerProcess
 
-
+from poodle_scrp import PoodlerSpider
+from poodle_scrp import utils
 
 
 def main():
+    if len(sys.argv) == 3:
+        course = sys.argv[1]
+        save_dir = sys.argv[2]
+    elif len(sys.argv) == 2:
+        course = sys.argv[1]
+        save_dir = utils.current_datetime()
+    else:
+        course = 'ca269'
+        save_dir = utils.current_datetime()
+    save_dir = os.path.abspath(save_dir)
+
     process = CrawlerProcess()
-    process.crawl('poodler')
-    # process.crawl(MySpider2)
+    process.crawl(PoodlerSpider, course=course, save_dir=save_dir)
     process.start()
 
 
