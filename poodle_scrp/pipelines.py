@@ -8,6 +8,7 @@
 import os
 import os.path
 import datetime
+import logging
 
 from scrapy.exporters import JsonLinesItemExporter
 
@@ -22,12 +23,10 @@ class DataTypeJsonLinesExporter(object):
 
     def open_spider(self, spider):
         self.exporters = {}
-        # curr_t = datetime.datetime.now().strftime('%Y_%m_%d_%H_%M_%S_%f')
-        # self.curr_t = curr_t
-        # os.mkdir(curr_t)
         save_dir = spider.save_dir
         self.save_dir = save_dir
         os.makedirs(save_dir, exist_ok=True)
+        logging.debug('Saving at "{}"'.format(save_dir))
 
     def close_spider(self, spider):
         for exporter in self.exporters.values():

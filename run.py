@@ -24,8 +24,8 @@ def main():
         course = sys.argv[1]
         save_dir = utils.current_datetime()
     else:
-        course = 'ca269'
-        save_dir = utils.current_datetime()
+        print('Usage:\n\trun.py <course-code> <save-path>')
+        raise SystemExit
     save_dir = os.path.abspath(save_dir)
 
     process = CrawlerProcess()
