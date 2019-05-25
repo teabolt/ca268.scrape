@@ -11,9 +11,9 @@ import sys
 import os.path
 
 from scrapy.crawler import CrawlerProcess
+from scrapy.utils.project import get_project_settings
 
-from poodle_scrp import PoodlerSpider
-from poodle_scrp import utils
+import utils
 
 
 def main():
@@ -24,12 +24,15 @@ def main():
         course = sys.argv[1]
         save_dir = utils.current_datetime()
     else:
-        print('Usage:\n\trun.py <course-code> <save-path>')
-        raise SystemExit
+        print("""Usage: `run.py <course-code> [save-dir]`
+            'course-code': course to web scrape, one of {ca268, ca269}
+            'save-dir': path to the directory where to save, defaults to the current datetime"""
+        )
+        sys.exit()
     save_dir = os.path.abspath(save_dir)
 
-    process = CrawlerProcess()
-    process.crawl(PoodlerSpider, course=course, save_dir=save_dir)
+    process = CrawlerProcess(get_project_settings())
+    process.crawl('poodler', course=course, save_dir=save_dir)
     process.start()
 
 

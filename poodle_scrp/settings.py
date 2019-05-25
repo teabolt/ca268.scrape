@@ -8,7 +8,6 @@
 #     https://doc.scrapy.org/en/latest/topics/settings.html
 #     https://doc.scrapy.org/en/latest/topics/downloader-middleware.html
 #     https://doc.scrapy.org/en/latest/topics/spider-middleware.html
-
 BOT_NAME = 'poodle_scrp'
 
 SPIDER_MODULES = ['poodle_scrp.spiders']
@@ -66,7 +65,7 @@ DOWNLOADER_MIDDLEWARES = {
 # See https://doc.scrapy.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
    # 'poodle_scrp.pipelines.PoodleScrpPipeline': 400,
-   'poodle_scrp.pipelines.DataTypeJsonLinesExporter': 800,
+   'poodle_scrp.pipelines.DataTypeJsonLinesExporter': 400,
 }
 
 # Enable and configure the AutoThrottle extension (disabled by default)
