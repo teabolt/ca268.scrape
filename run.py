@@ -2,10 +2,11 @@
 
 """
 Replacement for using 'scrapy crawl ...' on the command line
-
-Usage:
-run.py <course-code> <save-path>
 """
+__use__ = """Usage: `run.py <course-code> [save-dir]`
+            'course-code': course to web scrape, one of {ca268, ca269}
+            'save-dir': path to the directory where to save, defaults to the current datetime"""
+__doc__ += __use__
 
 import sys
 import os.path
@@ -24,10 +25,7 @@ def main():
         course = sys.argv[1]
         save_dir = utils.current_datetime()
     else:
-        print("""Usage: `run.py <course-code> [save-dir]`
-            'course-code': course to web scrape, one of {ca268, ca269}
-            'save-dir': path to the directory where to save, defaults to the current datetime"""
-        )
+        print(__use__)
         sys.exit()
     save_dir = os.path.abspath(save_dir)
 
