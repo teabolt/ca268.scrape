@@ -25,8 +25,7 @@ def main():
         course = sys.argv[1]
         save_dir = utils.current_datetime()
     else:
-        print(__use__)
-        sys.exit()
+        sys.exit(__use__)
     save_dir = os.path.abspath(save_dir)
 
     process = CrawlerProcess(get_project_settings())

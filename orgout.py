@@ -7,7 +7,8 @@ import os
 import os.path
 import json
 import heapq
-import re
+
+import utils
 
 
 class Ca268Organiser(object):
@@ -15,36 +16,36 @@ class Ca268Organiser(object):
     def __init__(self, input_dir, output_dir):
         self.dir_in = input_dir
         self.dir_out = output_dir
-        os.makedirs(output_dir, exist_ok=True)    # silently continue if the output directory is present
+
+        # silently continue if the output directory is present
+        os.makedirs(output_dir, exist_ok=True) 
+
         # a priority queue heap to sort the sections by ID (holds all section data on a live object)
         self.section_heap = []
+
         # a cross-reference table between section ID and its computerised name
         self.section_index = {}
+
         # VPL's that are still looking for a section
         self.awaiting_vpls = []
 
-    @staticmethod
-    def computerise_string(s):
-        """Transform a string into alphanumeric underscore-separated lowercase words"""
-        return '_'.join(re.sub(r'[^a-zA-Z0-9\s]+', '', s).split()).lower()
-
     def _add_section(self, section):
         """Add a section to the index and heap"""
-        self.section_index[section['section_id']] = self.computerise_string(section['section_title'])
+        self.section_index[section['section_id']] = utils.computerise_string(section['section_title'])
         heapq.heappush(self.section_heap, (int(section['section_id']), section))
 
     def _write_sections(self):
         """Write a summary file for each section found in the section heap, in order"""
-        with open(os.path.join(self.dir_out, 'section_descriptors.txt'), 'wb') as fsect:
+        with open(os.path.join(self.dir_out, 'section_descriptors.txt'), 'w') as fsect:
             while self.section_heap:
                 section = heapq.heappop(self.section_heap)[1]
-                fsect.write(bytes(('='*10)+'\n', encoding='utf-8'))
-                fsect.write(bytes('Title: {}\n'.format(section['section_title']), encoding='utf-8'))
+                fsect.write(('='*10)+'\n')
+                fsect.write('Title: {}\n'.format(section['section_title']))
                 if section['section_summary']:
-                    fsect.write(bytes('Summary: {}\n'.format(section['section_summary']), encoding='utf-8'))
+                    fsect.write('Summary: {}\n'.format(section['section_summary']))
                 else:
-                    fsect.write(bytes('Summary: No summary available :-(\n', encoding='utf-8'))
-                fsect.write(bytes('\n\n', encoding='utf-8'))
+                    fsect.write('Summary: No summary available :-(\n')
+                fsect.write('\n\n')
 
     def _write_section_vpl(self, vpl):
         """Write a VPL under the section it belongs to"""
@@ -58,20 +59,20 @@ class Ca268Organiser(object):
         if not os.path.isdir(directory):
             os.mkdir(directory)
         computerised_vpl_name = self.computerise_string(vpl['vpl_title'])
-        with open(os.path.join(directory, '{}.txt'.format(computerised_vpl_name)), 'wb') as finfo:
+        with open(os.path.join(directory, '{}.txt'.format(computerised_vpl_name)), 'w') as finfo:
             if vpl['vpl_code']:
-                with open(os.path.join(directory, '{}.py'.format(computerised_vpl_name)), 'wb') as fpy:
-                    fpy.write(bytes(vpl['vpl_code'], encoding='utf-8'))
-            finfo.write(bytes('Title: {}\n'.format(vpl['vpl_title']), encoding='utf-8'))
-            finfo.write(bytes('Description: {}\n'.format(vpl['vpl_description']), encoding='utf-8'))
+                with open(os.path.join(directory, '{}.py'.format(computerised_vpl_name)), 'w') as fpy:
+                    fpy.write(vpl['vpl_code'])
+            finfo.write('Title: {}\n'.format(vpl['vpl_title']))
+            finfo.write('Description: {}\n'.format(vpl['vpl_description']))
             if vpl['vpl_tests']:
-                finfo.write(bytes('Tests: {}\n'.format(vpl['vpl_tests']), encoding='utf-8'))
+                finfo.write('Tests: {}\n'.format(vpl['vpl_tests']))
             else:
-                finfo.write(bytes('Tests: No tests available\n', encoding='utf-8'))
+                finfo.write('Tests: No tests available\n')
             if vpl['vpl_grade']:
-                finfo.write(bytes('Grade: {}\n'.format(vpl['vpl_grade']), encoding='utf-8'))
+                finfo.write('Grade: {}\n'.format(vpl['vpl_grade']))
             else:
-                finfo.write(bytes('Grade: No grade available\n', encoding='utf-8'))
+                finfo.write('Grade: No grade available\n')
 
     def organise(self):
         """The core method of the class. Orchestrates the organisation of the input"""
@@ -97,16 +98,22 @@ class Ca268Organiser(object):
 
 def main():
     if not sys.argv[1:]:
-        raise Exception('{} <path_to_input_directory> [path_to_output_directory]'.
+        # no arguments
+        sys.exit('{} <path_to_input_directory> [path_to_output_directory]'.
             format(os.path.basename(sys.argv[0])))
+
+    # input directory
     input_directory = os.path.abspath(sys.argv[1])
     if not os.path.isdir(input_directory):
-        raise Exception('"{}" is not a directory'.format(input_directory))
+        sys.exit('"{}" is not a directory'.format(input_directory))
+
+    # output directory
     if sys.argv[2:]:
         output_directory = sys.argv[2]
     else:
         output_directory = '{}_organised'.format(input_directory)
     output_directory = os.path.abspath(output_directory)
+
     print('Writing from "{}" to "{}"'.format(input_directory, output_directory))
     organiser = Ca268Organiser(input_directory, output_directory)
     organiser.organise()
