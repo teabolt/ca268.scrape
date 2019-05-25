@@ -58,7 +58,7 @@ class Ca268Organiser(object):
         """Create a .py and a .txt file for a VPL"""
         if not os.path.isdir(directory):
             os.mkdir(directory)
-        computerised_vpl_name = self.computerise_string(vpl['vpl_title'])
+        computerised_vpl_name = utils.computerise_string(vpl['vpl_title'])
         with open(os.path.join(directory, '{}.txt'.format(computerised_vpl_name)), 'w') as finfo:
             if vpl['vpl_code']:
                 with open(os.path.join(directory, '{}.py'.format(computerised_vpl_name)), 'w') as fpy:
