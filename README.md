@@ -1,6 +1,6 @@
 ## Update
 
-This has been renamed from 'ca268.scrape' to 'poodle.scrape'. The "Poodle" website is used to run multiple courses, including Data Structures and Algorithms (ca268) during first (Fall) semester and Object Oriented Programming (ca269) during second (Spring) semester. This program can now scrape from both courses.
+This has been renamed from 'ca268.scrape' to 'poodle.scrape'. The "Poodle" website is used to run multiple courses, including Data Structures and Algorithms (ca268) during first (Fall) semester and Object Oriented Programming (ca269) during second (Spring) semester. This program can now scrape from both courses (initially it only supported 'ca268').
 
 # poodle.scrape
 
@@ -15,37 +15,39 @@ Note that this scrapes HTML views, so the scraper can break any time the "Poodle
 * <a href="https://scrapy.org/">Scrapy</a>
 
 ## Installation
-* ```git clone ```
-* ```cd poodle.scrape```
-* ```pip install -r requirements.txt```
-
-
-## Usage (command line)
-
-(Use the path separator and python invokation appropriate for your Operating System. The examples here show Windows)
-
-### Web scraper: Sends requests to the web server and processes the responses.
-
-```
-cd <project_directory>/poodle_scrp
-scrapy crawl ca268
+```git clone https://github.com/teabolt/poodle.scrape.git
+   cd poodle.scrape
+   pip install -r requirements.txt
 ```
 
-* Enter username and password for the website before the scraper can continue.
-* Find results (jsonlines files) in a directory with the current datetime
+## Usage
 
-### Alternative: use run.py
+### Run the scraper (download student and lecturer's data from "Poodle")
 
-### Output organiser: Extracts JSONLines to human-readable and source code files, under suitable directories.
+In the following code examples, angle brackets (<>) indicate a required argument. Square brackets ([]) indicate an optional argument. Do not include the brackets when passing the argument.
 
 ```
-cd <project_directory>
-py -3.7 orgout.py <input_directory_path> [output_directory_path]
+python run.py <course-code> [save-dir]
 ```
+* ```course-code``` is either 'ca268' (for data structures and algorithms) or 'ca269' (for object oriented programming).
+* ```save-dir``` is a path to the directory where scraped items should be saved. Defaults to the current date and time.
 
-* Directory paths support relative path notation.
-* Output directory is optional. If it is not provided, a directory is made alongside 'input_directory'.
-* Find new directories, .txt, and .py files under the output directory.
+* Enter your Poodle username and password so that the scraper can continue (this is for authentication purposes only).
+* Find the results in the directory specified as .jsonlines files.
+
+Alternatively, instead of using the ```run.py``` script you can use the scrapy command line tool:
+```scrapy crawl poodler -a course=<course-code> [-a save_dir=<save-dir>]```
+
+
+### Organise the output (make the downloaded content nice to read)
+
+```
+python orgout.py <input-dir> [output-dir]
+```
+* ```input-dir``` is a path to the directory with scraped items, to be organised.
+* ```output-dir``` is a path to the directory where the organised items are to be written to. Defaults to ```input-dir``` with ```_organised``` appended to the directory name.
+
+* Find the results in ```output-dir```, including subdirectories, .txt, and .py files.
 
 ## Linux video showcase, python 3.7.3 64-bit Ubuntu 18.04 LTS
 
@@ -55,29 +57,33 @@ py -3.7 orgout.py <input_directory_path> [output_directory_path]
 <a href="https://youtu.be/nFgYS49q0Y4" target="_blank"><img src="http://img.youtube.com/vi/nFgYS49q0Y4/0.jpg" alt="Image from video showing the command-line and the file explorer" width="240" height="180" border="10" /></a>
 
 
-
 ## Implementation
-The relevant source code is in:
-* ```poodle_scrp\poodle_scrp```
-  * ```spiders\ca268.py```
-    * Log in functionality, requests, response processing, data output
-  * ```pipelines.py```
-    * item exporter class ```DataTypeJsonLinesExporter```, writes dict output to appropriate jsonlines file
-  * ```settings.py```
-    * activates the custom pipeline
-    * enables request caching
+
+Web scraper: Sends requests to the web server and processes the responses.
+
+Output organiser: Extracts JSONLines to human-readable and source code files, under suitable directories.
+
+Project structure:
 * ```run.py```
 * ```orgout.py```
-  * class ```Ca268Organiser```, dependent on the format of the scraper's output lines
+  * class ```Ca268Organiser```, dependent on the format of the scraper's output lines.
+* ```/poodle_scrp```
+  * ```spiders/poodler.py```
+    * Log in functionality, requests for task pages, parsing out items into dicts.
+  * ```pipelines.py```
+    * item exporter class ```DataTypeJsonLinesExporter```, converts dicts to jsonlines, writes files.
+  * ```settings.py```
+    * activates the custom item exporter pipeline
+    * enables request caching
 
-## Other
+JSONLines is used over JSON, as "flat is better than nested".
 
 
 ### Future enhancements
 * Improve scraper output (nice documented fields, relationships to other items).
-* Multiple export formats not just JSONLines.
-* Scrapy features: item pipelines, item classes.
-* Integrate run.py and orgout.py to execute them together with one command.
+* Multiple export formats, not just JSONLines.
+* Use more scrapy features: item pipelines, item classes.
+* Integrate ```run.py``` and ```orgout.py``` to execute them together with one command.
 
 
 ### Known issues

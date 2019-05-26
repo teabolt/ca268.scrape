@@ -99,7 +99,7 @@ class Ca268Organiser(object):
 def main():
     if not sys.argv[1:]:
         # no arguments
-        sys.exit('{} <path_to_input_directory> [path_to_output_directory]'.
+        sys.exit('{} <input-dir> [output-dir]'.
             format(os.path.basename(sys.argv[0])))
 
     # input directory
