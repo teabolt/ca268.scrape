@@ -50,11 +50,14 @@ python orgout.py <input-dir> [output-dir]
 * Find the results in ```output-dir```, including subdirectories, .txt, and .py files.
 
 ## Linux video showcase, Python 3.7.3 64-bit Ubuntu 18.04 LTS
+
 <a href="https://youtu.be/nFgYS49q0Y4" target="_blank"><img src="http://img.youtube.com/vi/nFgYS49q0Y4/0.jpg" alt="Image from video showing the command-line and the file explorer" width="240" height="180" border="10" /></a>
 
 
 ## Windows video showcase, Python 3.7.2 64-bit Windows
+
 <a href="https://youtu.be/0_TOIR3KRrU" target="_blank"><img src="http://img.youtube.com/vi/0_TOIR3KRrU/0.jpg" alt="Image from video showing the results in a text editor" width="240" height="180" border="10" /></a>
+
 (clip where ```python orgout.py``` is ran seems to be corrupted)
 
 
