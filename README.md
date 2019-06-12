@@ -42,10 +42,11 @@ Alternatively, instead of using the ```run.py``` script you can use the scrapy c
 ### Organise the output (make the downloaded content nice to read)
 
 ```
-python orgout.py <input-dir> [output-dir]
+python orgout.py <input-dir> [output-dir] [code-extension]
 ```
 * ```input-dir``` is a path to the directory with scraped items, to be organised.
 * ```output-dir``` is a path to the directory where the organised items are to be written to. Defaults to ```input-dir``` with ```_organised``` appended to the directory name.
+* `code-extension` is a string indicating the extension for source code files. For example, 'py' (for ca268) or 'java' (for ca269). Defaults to 'py'.
 
 * Find the results in ```output-dir```, including subdirectories, .txt, and .py files.
 
@@ -105,6 +106,7 @@ Initially a request is sent for the course page's index. The crawler is then red
 * Use more scrapy features: item pipelines, item classes.
 * Integrate ```run.py``` and ```orgout.py``` to execute one after the other.
 * Refactor ```orgout.py```. It is very coupled with the web scraper's output. It could be removed with functionality moved to other modules.
+* Remove the `code-extension` command-line argument to `orgout.py` and get the code extension in the scraper.
 
 
 ## Known issues
