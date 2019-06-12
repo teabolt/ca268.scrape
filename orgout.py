@@ -13,9 +13,10 @@ import utils
 
 class Ca268Organiser(object):
     
-    def __init__(self, input_dir, output_dir):
+    def __init__(self, input_dir, output_dir, code_extension):
         self.dir_in = input_dir
         self.dir_out = output_dir
+        self.code_extension = code_extension
 
         # silently continue if the output directory is present
         os.makedirs(output_dir, exist_ok=True) 
@@ -55,13 +56,18 @@ class Ca268Organiser(object):
         self._write_vpl(vpl, section_dir)
 
     def _write_vpl(self, vpl, directory):
-        """Create a .py and a .txt file for a VPL"""
+        """Create a text file and a source code file
+        (with an extension specified by self.code_extension)
+        for a VPL."""
         if not os.path.isdir(directory):
             os.mkdir(directory)
         computerised_vpl_name = utils.computerise_string(vpl['vpl_title'])
         with open(os.path.join(directory, '{}.txt'.format(computerised_vpl_name)), 'w') as finfo:
             if vpl['vpl_code']:
-                with open(os.path.join(directory, '{}.py'.format(computerised_vpl_name)), 'w') as fpy:
+                code_file = os.path.join(directory, '{}.{}'.format(
+                    computerised_vpl_name, 
+                    self.code_extension))
+                with open(code_file, 'w') as fpy:
                     fpy.write(vpl['vpl_code'])
             finfo.write('Title: {}\n'.format(vpl['vpl_title']))
             finfo.write('Description: {}\n'.format(vpl['vpl_description']))
@@ -114,8 +120,18 @@ def main():
         output_directory = '{}_organised'.format(input_directory)
     output_directory = os.path.abspath(output_directory)
 
+    # code extension, i.e. 'py' (for ca268), 'java' (for ca269)
+    if len(sys.argv) == 4:
+        code_extension = sys.argv[3]
+    else:
+        # assume it's python files
+        code_extension = 'py'
+    # TODO: it would be ideal to detect the type of file in the scraper
+    # (we can check the extension of the uploaded file)
+    # and include it as a scraped item
+
     print('Writing from "{}" to "{}"'.format(input_directory, output_directory))
-    organiser = Ca268Organiser(input_directory, output_directory)
+    organiser = Ca268Organiser(input_directory, output_directory, code_extension)
     organiser.organise()
 
 
